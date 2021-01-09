@@ -229,6 +229,8 @@ configure(subprojects - project(":spring-build-src")) { subproject ->
 		options.use = true
 		options.links(project.ext.javadocLinks)
 		options.addStringOption("Xdoclint:none", "-quiet")
+		
+		failOnError = false
 
 		// Suppress warnings due to cross-module @see and @link references.
 		// Note that global 'api' task does display all warnings.
