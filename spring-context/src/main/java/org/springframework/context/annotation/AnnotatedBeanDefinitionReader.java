@@ -229,8 +229,9 @@ public class AnnotatedBeanDefinitionReader {
 		abd.setScope(scopeMetadata.getScopeName());
 		String beanName = (name != null ? name : this.beanNameGenerator.generateBeanName(abd, this.registry));
 
-		// 处理配置类中的通用注解，即Lazy、DependsOn、Primary和Role等，将处理的结果放到AnnotatedGenericBeanDefinition的数据结构中
+		// abd对象中通用注解的解析(即Lazy、DependsOn、Primary和Role等处理之后放入到AnnotatedGenericBeanDefinition的数据结构中)
 		AnnotationConfigUtils.processCommonDefinitionAnnotations(abd);
+
 		//  依次判断了注解当中是否包含了Primary、Lazy、qualifier，如果包含就设置AnnotatedGenericBeanDefinition对应的属性
 		if (qualifiers != null) {
 			for (Class<? extends Annotation> qualifier : qualifiers) {
@@ -245,13 +246,16 @@ public class AnnotatedBeanDefinitionReader {
 				}
 			}
 		}
+
+		//回调设置
 		for (BeanDefinitionCustomizer customizer : definitionCustomizers) {
 			customizer.customize(abd);
 		}
 
-		// 将AnnotatedGenericBeanDefinition和他对应的beanName存储到BeanDefinitionHolder中的对应属性中
+		// AnnotatedGenericBeanDefinition和他对应的beanName被包装进BeanDefinitionHolder对应属性中
 		BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(abd, beanName);
 
+		//根据@Scope注解的值(指proxyMode)，为Bean定义创建对应的代理对象BeanDefinitionHolder，并且填充属性
 		definitionHolder = AnnotationConfigUtils.applyScopedProxyMode(scopeMetadata, definitionHolder, this.registry);
 
 		// 将 BeanDefinitionHolder 注册给 this.registry 即 AnnotationConfigApplicationContext。
