@@ -298,8 +298,8 @@ public abstract class WebApplicationContextUtils {
 		String name = StandardServletEnvironment.SERVLET_CONTEXT_PROPERTY_SOURCE_NAME;
 		if (servletContext != null && sources.get(name) instanceof StubPropertySource) {
 			sources.replace(name, new ServletContextPropertySource(name, servletContext));
+			name = StandardServletEnvironment.SERVLET_CONFIG_PROPERTY_SOURCE_NAME;
 		}
-		name = StandardServletEnvironment.SERVLET_CONFIG_PROPERTY_SOURCE_NAME;
 		if (servletConfig != null && sources.get(name) instanceof StubPropertySource) {
 			sources.replace(name, new ServletConfigPropertySource(name, servletConfig));
 		}

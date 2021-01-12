@@ -865,7 +865,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	@Override
 	public void addBeanPostProcessor(BeanPostProcessor beanPostProcessor) {
 		Assert.notNull(beanPostProcessor, "BeanPostProcessor must not be null");
-		// Remove from old position, if any
+		// 如果有的话从旧的位置移走
 		this.beanPostProcessors.remove(beanPostProcessor);
 		// Track whether it is instantiation/destruction aware
 		if (beanPostProcessor instanceof InstantiationAwareBeanPostProcessor) {
@@ -874,7 +874,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		if (beanPostProcessor instanceof DestructionAwareBeanPostProcessor) {
 			this.hasDestructionAwareBeanPostProcessors = true;
 		}
-		// Add to end of list
+		// 添加到集合末尾
 		this.beanPostProcessors.add(beanPostProcessor);
 	}
 

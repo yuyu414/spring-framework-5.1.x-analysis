@@ -143,7 +143,7 @@ public class GenericWebApplicationContext extends GenericApplicationContext
 	}
 
 	/**
-	 * Register ServletContextAwareProcessor.
+	 * ServletContextAwareProcessor用于处理ServletContextAware类型的bean初始化的时候调用setServletContext或者setServletConfig方法
 	 * @see ServletContextAwareProcessor
 	 */
 	@Override
