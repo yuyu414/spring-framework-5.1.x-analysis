@@ -53,6 +53,7 @@ public interface SmartInitializingSingleton {
 	 * and not for any other bean scope either. Carefully use it for beans
 	 * with the intended bootstrap semantics only.
 	 */
+	//Spring 提供的一个扩展点，在所有非懒加载单例实例化结束后调用。
 	void afterSingletonsInstantiated();
 
 }
