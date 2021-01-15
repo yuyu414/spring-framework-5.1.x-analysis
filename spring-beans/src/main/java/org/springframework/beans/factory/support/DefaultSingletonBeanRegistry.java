@@ -74,13 +74,13 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	private static final int SUPPRESSED_EXCEPTIONS_LIMIT = 100;
 
 
-	/** Cache of singleton objects: bean name to bean instance. */
+	/** 单例对象的map（一级） */
 	private final Map<String, Object> singletonObjects = new ConcurrentHashMap<>(256);
 
-	/** Cache of singleton factories: bean name to ObjectFactory. */
+	/** 单例工厂对象的map（三级） */
 	private final Map<String, ObjectFactory<?>> singletonFactories = new HashMap<>(16);
 
-	/** Cache of early singleton objects: bean name to bean instance. */
+	/** 单例对象的早期对象(指刚刚调用了构造方法，但还没有给bean的属性进行赋值) （二级）*/
 	private final Map<String, Object> earlySingletonObjects = new ConcurrentHashMap<>(16);
 
 	/** Set of registered singletons, containing the bean names in registration order. */
@@ -165,32 +165,42 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	@Override
 	@Nullable
 	public Object getSingleton(String beanName) {
+		//在这里系统一般是允许早期对象引用的，allowEarlyReference通过这个参数可以控制解决循环依赖
 		return getSingleton(beanName, true);
 	}
 
 	/**
-	 * Return the (raw) singleton object registered under the given name.
-	 * <p>Checks already instantiated singletons and also allows for an early
-	 * reference to a currently created singleton (resolving a circular reference).
+	 * 返回以给定名称注册的单例对象。
+	 * 检查已实例化的单例，并允许对当前创建的单例的早期引用。
+	 *  注：循环依赖的核心处理代码
 	 * @param beanName the name of the bean to look for
 	 * @param allowEarlyReference whether early references should be created or not
 	 * @return the registered singleton object, or {@code null} if none found
 	 */
 	@Nullable
 	protected Object getSingleton(String beanName, boolean allowEarlyReference) {
-		// Quick check for existing instance without full singleton lock
+
+		 //我们尝试去(单例缓存池（singletonObjects其实就是我们常说的spring的容器）中去获取对象
+		//IoC容器初始化加载单实例bean的时候第一次进来的时候 该map中一般返回空
 		Object singletonObject = this.singletonObjects.get(beanName);
+		//若在singletonObjects中没有获取到对象,并且singletonsCurrentlyInCreation包含该beanName（标识正在创建）
 		if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
+
+			//尝试去早期对象的map(指刚刚调用了构造方法，但还没有给bean的属性进行赋值)中获取
 			singletonObject = this.earlySingletonObjects.get(beanName);
+			//也没有获取到对象,allowEarlyReference为true(参数是有上一个方法传递进来的true)
 			if (singletonObject == null && allowEarlyReference) {
+				//加锁&双重校验
 				synchronized (this.singletonObjects) {
-					// Consistent creation of early reference within full singleton lock
 					singletonObject = this.singletonObjects.get(beanName);
 					if (singletonObject == null) {
 						singletonObject = this.earlySingletonObjects.get(beanName);
 						if (singletonObject == null) {
+							// 从单例工厂map的中获取ObjectFactory对象 这个对接就是用来解决循环依赖的关键所在
+							// 因为在getBean的过程中,当bean调用了构造方法的时候,把早期对象包成一个ObjectFactory存到这个singletonFactories中
 							ObjectFactory<?> singletonFactory = this.singletonFactories.get(beanName);
 							if (singletonFactory != null) {
+								//如果有则移除从singletonFactories移除,放到早期对象map中
 								singletonObject = singletonFactory.getObject();
 								this.earlySingletonObjects.put(beanName, singletonObject);
 								this.singletonFactories.remove(beanName);

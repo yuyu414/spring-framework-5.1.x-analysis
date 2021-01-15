@@ -97,14 +97,14 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
 			synchronized (getSingletonMutex()) {
 				Object object = this.factoryBeanObjectCache.get(beanName);
 				if (object == null) {
+					//从FactoryBean中获取真实的bean
 					object = doGetObjectFromFactoryBean(factory, beanName);
 					// Only post-process and store if not put there already during getObject() call above
 					// (e.g. because of circular reference processing triggered by custom getBean calls)
 					Object alreadyThere = this.factoryBeanObjectCache.get(beanName);
 					if (alreadyThere != null) {
 						object = alreadyThere;
-					}
-					else {
+					}else {
 						if (shouldPostProcess) {
 							if (isSingletonCurrentlyInCreation(beanName)) {
 								// Temporarily return non-post-processed object, not storing it yet..
@@ -112,13 +112,12 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
 							}
 							beforeSingletonCreation(beanName);
 							try {
+								//初始化之后执行bean的后置处理器
 								object = postProcessObjectFromFactoryBean(object, beanName);
-							}
-							catch (Throwable ex) {
+							}catch (Throwable ex) {
 								throw new BeanCreationException(beanName,
 										"Post-processing of FactoryBean's singleton object failed", ex);
-							}
-							finally {
+							}finally {
 								afterSingletonCreation(beanName);
 							}
 						}
@@ -129,14 +128,13 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
 				}
 				return object;
 			}
-		}
-		else {
+		}else {
 			Object object = doGetObjectFromFactoryBean(factory, beanName);
 			if (shouldPostProcess) {
 				try {
+					//初始化之后执行bean的后置处理器
 					object = postProcessObjectFromFactoryBean(object, beanName);
-				}
-				catch (Throwable ex) {
+				}catch (Throwable ex) {
 					throw new BeanCreationException(beanName, "Post-processing of FactoryBean's object failed", ex);
 				}
 			}
@@ -159,19 +157,15 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
 				AccessControlContext acc = getAccessControlContext();
 				try {
 					object = AccessController.doPrivileged((PrivilegedExceptionAction<Object>) factory::getObject, acc);
-				}
-				catch (PrivilegedActionException pae) {
+				}catch (PrivilegedActionException pae) {
 					throw pae.getException();
 				}
-			}
-			else {
+			}else {
 				object = factory.getObject();
 			}
-		}
-		catch (FactoryBeanNotInitializedException ex) {
+		}catch (FactoryBeanNotInitializedException ex) {
 			throw new BeanCurrentlyInCreationException(beanName, ex.toString());
-		}
-		catch (Throwable ex) {
+		}catch (Throwable ex) {
 			throw new BeanCreationException(beanName, "FactoryBean threw exception on object creation", ex);
 		}
 
