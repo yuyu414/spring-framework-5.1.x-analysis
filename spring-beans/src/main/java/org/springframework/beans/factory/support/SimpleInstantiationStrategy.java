@@ -59,13 +59,15 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 
 	@Override
 	public Object instantiate(RootBeanDefinition bd, @Nullable String beanName, BeanFactory owner) {
-		// Don't override the class with CGLIB if no overrides.
+		// 如果没有需要覆盖的方法，通过反射直接创建
 		if (!bd.hasMethodOverrides()) {
 			Constructor<?> constructorToUse;
 			synchronized (bd.constructorArgumentLock) {
+				//先尝试从缓存中获取构造函数
 				constructorToUse = (Constructor<?>) bd.resolvedConstructorOrFactoryMethod;
 				if (constructorToUse == null) {
 					final Class<?> clazz = bd.getBeanClass();
+					//如果需要实例化的类是接口，则抛出异常
 					if (clazz.isInterface()) {
 						throw new BeanInstantiationException(clazz, "Specified class is an interface");
 					}
@@ -73,21 +75,22 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 						if (System.getSecurityManager() != null) {
 							constructorToUse = AccessController.doPrivileged(
 									(PrivilegedExceptionAction<Constructor<?>>) clazz::getDeclaredConstructor);
-						}
-						else {
+						}else {
+							//直接通过反射获取无参构造函数
 							constructorToUse = clazz.getDeclaredConstructor();
 						}
+						//将构造函数缓存起来
 						bd.resolvedConstructorOrFactoryMethod = constructorToUse;
-					}
-					catch (Throwable ex) {
+					}catch (Throwable ex) {
 						throw new BeanInstantiationException(clazz, "No default constructor found", ex);
 					}
 				}
 			}
+			//实例化bean，源码已经在前面介绍带有参数实例化bean时贴出
 			return BeanUtils.instantiateClass(constructorToUse);
-		}
-		else {
+		}else {
 			// Must generate CGLIB subclass.
+			// 使用动态代理覆盖方法
 			return instantiateWithMethodInjection(bd, beanName, owner);
 		}
 	}

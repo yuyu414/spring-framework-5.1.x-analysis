@@ -118,13 +118,11 @@ public class CglibSubclassingInstantiationStrategy extends SimpleInstantiationSt
 			Object instance;
 			if (ctor == null) {
 				instance = BeanUtils.instantiateClass(subclass);
-			}
-			else {
+			}else {
 				try {
 					Constructor<?> enhancedSubclassConstructor = subclass.getConstructor(ctor.getParameterTypes());
 					instance = enhancedSubclassConstructor.newInstance(args);
-				}
-				catch (Exception ex) {
+				}catch (Exception ex) {
 					throw new BeanInstantiationException(this.beanDefinition.getBeanClass(),
 							"Failed to invoke constructor for CGLIB enhanced subclass [" + subclass.getName() + "]", ex);
 				}
