@@ -692,8 +692,7 @@ public abstract class ReflectionUtils {
 		for (Field field : getDeclaredFields(clazz)) {
 			try {
 				fc.doWith(field);
-			}
-			catch (IllegalAccessException ex) {
+			}catch (IllegalAccessException ex) {
 				throw new IllegalStateException("Not allowed to access field '" + field.getName() + "': " + ex);
 			}
 		}

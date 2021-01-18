@@ -79,14 +79,16 @@ public class InjectionMetadata {
 	}
 
 	public void inject(Object target, @Nullable String beanName, @Nullable PropertyValues pvs) throws Throwable {
+		// 获取所有需要被注入的元素
 		Collection<InjectedElement> checkedElements = this.checkedElements;
-		Collection<InjectedElement> elementsToIterate =
-				(checkedElements != null ? checkedElements : this.injectedElements);
+		Collection<InjectedElement> elementsToIterate =(checkedElements != null ? checkedElements : this.injectedElements);
+		// 迭代的元素不为空
 		if (!elementsToIterate.isEmpty()) {
 			for (InjectedElement element : elementsToIterate) {
 				if (logger.isTraceEnabled()) {
 					logger.trace("Processing injected element of bean '" + beanName + "': " + element);
 				}
+				// 循环注入，这里有可能是AutowiredFieldElement也可能AutowiredMethodElement，因此调用的inject是2个不同的方法
 				element.inject(target, beanName, pvs);
 			}
 		}
