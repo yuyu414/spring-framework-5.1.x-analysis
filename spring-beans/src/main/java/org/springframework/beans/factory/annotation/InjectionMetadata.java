@@ -143,11 +143,9 @@ public class InjectionMetadata {
 		protected final Class<?> getResourceType() {
 			if (this.isField) {
 				return ((Field) this.member).getType();
-			}
-			else if (this.pd != null) {
+			}else if (this.pd != null) {
 				return this.pd.getPropertyType();
-			}
-			else {
+			}else {
 				return ((Method) this.member).getParameterTypes()[0];
 			}
 		}
@@ -159,8 +157,7 @@ public class InjectionMetadata {
 					throw new IllegalStateException("Specified field type [" + fieldType +
 							"] is incompatible with resource type [" + resourceType.getName() + "]");
 				}
-			}
-			else {
+			}else {
 				Class<?> paramType =
 						(this.pd != null ? this.pd.getPropertyType() : ((Method) this.member).getParameterTypes()[0]);
 				if (!(resourceType.isAssignableFrom(paramType) || paramType.isAssignableFrom(resourceType))) {
@@ -176,21 +173,26 @@ public class InjectionMetadata {
 		protected void inject(Object target, @Nullable String requestingBeanName, @Nullable PropertyValues pvs)
 				throws Throwable {
 
+			// 如果是属性，则反射赋值
 			if (this.isField) {
 				Field field = (Field) this.member;
 				ReflectionUtils.makeAccessible(field);
+				//如果是使用字段形式的注入，getResourceToInject由子类ResourceElement
 				field.set(target, getResourceToInject(target, requestingBeanName));
-			}
-			else {
+			}else {
+				//此步骤检测如果bean已经显式的设置一个对象依赖引用则跳过使用setter方法再次赋值。
+
+				// 检查当前的属性是不是通过by_name和by_type来注入的
 				if (checkPropertySkipping(pvs)) {
 					return;
 				}
 				try {
+					// 如果是方法，则通过方法赋值
+					// 这里的方法并不是一定要setXX方法
 					Method method = (Method) this.member;
 					ReflectionUtils.makeAccessible(method);
 					method.invoke(target, getResourceToInject(target, requestingBeanName));
-				}
-				catch (InvocationTargetException ex) {
+				} catch (InvocationTargetException ex) {
 					throw ex.getTargetException();
 				}
 			}
@@ -220,8 +222,7 @@ public class InjectionMetadata {
 						// Explicit value provided as part of the bean definition.
 						this.skip = true;
 						return true;
-					}
-					else if (pvs instanceof MutablePropertyValues) {
+					}else if (pvs instanceof MutablePropertyValues) {
 						((MutablePropertyValues) pvs).registerProcessedProperty(this.pd.getName());
 					}
 				}
