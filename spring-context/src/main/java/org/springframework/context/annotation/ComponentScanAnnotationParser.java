@@ -74,9 +74,13 @@ class ComponentScanAnnotationParser {
 
 
 	public Set<BeanDefinitionHolder> parse(AnnotationAttributes componentScan, final String declaringClass) {
+		// 创建 ClassPathBeanDefinitionScanner
+		// 在 AnnotationConfigApplicationContext 的构造器中也创建了一个ClassPathBeanDefinitionScanner
+		// 这里证明了,执行扫描 scanner 不是构造器中的,而是这里创建的
 		ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(this.registry,
 				componentScan.getBoolean("useDefaultFilters"), this.environment, this.resourceLoader);
 
+		// 但是需要注意,通过源码可以明白,这里注册的自定义BeanNameGenerator 只对当前 scanner 有效
 		Class<? extends BeanNameGenerator> generatorClass = componentScan.getClass("nameGenerator");
 		boolean useInheritedGenerator = (BeanNameGenerator.class == generatorClass);
 		scanner.setBeanNameGenerator(useInheritedGenerator ? this.beanNameGenerator :
@@ -85,8 +89,7 @@ class ComponentScanAnnotationParser {
 		ScopedProxyMode scopedProxyMode = componentScan.getEnum("scopedProxy");
 		if (scopedProxyMode != ScopedProxyMode.DEFAULT) {
 			scanner.setScopedProxyMode(scopedProxyMode);
-		}
-		else {
+		} else {
 			Class<? extends ScopeMetadataResolver> resolverClass = componentScan.getClass("scopeResolver");
 			scanner.setScopeMetadataResolver(BeanUtils.instantiateClass(resolverClass));
 		}
@@ -109,6 +112,9 @@ class ComponentScanAnnotationParser {
 			scanner.getBeanDefinitionDefaults().setLazyInit(true);
 		}
 
+		// @ComponentScan(basePackageClasses = Xx.class)
+		// 可以指定basePackageClasses, 只要是与是这几个类所在包及其子包,就可以被Spring扫描
+		// 经常会用一个空的类来作为basePackageClasses,默认取当前配置类所在包及其子包
 		Set<String> basePackages = new LinkedHashSet<>();
 		String[] basePackagesArray = componentScan.getStringArray("basePackages");
 		for (String pkg : basePackagesArray) {

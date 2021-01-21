@@ -114,11 +114,9 @@ abstract class ConfigurationClassUtils {
 
 		if (isFullConfigurationCandidate(metadata)) {
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_FULL);
-		}
-		else if (isLiteConfigurationCandidate(metadata)) {
+		}else if (isLiteConfigurationCandidate(metadata)) {
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_LITE);
-		}
-		else {
+		}else {
 			return false;
 		}
 
