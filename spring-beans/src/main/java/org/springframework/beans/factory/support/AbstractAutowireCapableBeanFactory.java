@@ -425,7 +425,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		Object result = existingBean;
 		for (BeanPostProcessor processor : getBeanPostProcessors()) {
-			//当其中一个后处理器返回null时，就会中断处理器的调用链，直接返回
+			//当其中一个处理器返回null时，就会中断处理器的调用链，直接返回
 			Object current = processor.postProcessAfterInitialization(result, beanName);
 			if (current == null) {
 				return result;
@@ -586,7 +586,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		try {
 			//对bean属性进行填充，注入bean中的属性，会递归初始化依赖的bean
 			populateBean(beanName, mbd, instanceWrapper);
-			//调用初始化方法，比如init-method、注入Aware对象、后置处理器
+			//调用初始化方法，比如init-method、注入Aware对象、后置处理器，AOP也是在此處理的
 			exposedObject = initializeBean(beanName, exposedObject, mbd);
 		}catch (Throwable ex) {
 			if (ex instanceof BeanCreationException && beanName.equals(((BeanCreationException) ex).getBeanName())) {
