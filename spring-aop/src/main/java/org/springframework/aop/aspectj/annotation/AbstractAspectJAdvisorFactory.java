@@ -131,6 +131,8 @@ public abstract class AbstractAspectJAdvisorFactory implements AspectJAdvisorFac
 	@Nullable
 	protected static AspectJAnnotation<?> findAspectJAnnotationOnMethod(Method method) {
 		for (Class<?> clazz : ASPECTJ_ANNOTATION_CLASSES) {
+			//找到Pointcut.class, Around.class, Before.class, After.class, AfterReturning.class, AfterThrowing.class
+			//注解的方法，并且把注解里面的信息封装成AspectJAnnotation对象
 			AspectJAnnotation<?> foundAnnotation = findAnnotation(method, (Class<Annotation>) clazz);
 			if (foundAnnotation != null) {
 				return foundAnnotation;

@@ -76,6 +76,7 @@ public class DefaultAdvisorChainFactory implements AdvisorChainFactory, Serializ
 						match = mm.matches(method, actualClass);
 					}
 					if (match) {
+						//通过registry.getInterceptors(advisor)方法获取所有的增强器，并将增强器转为List<MethodInterceptor>，最终返回。
 						MethodInterceptor[] interceptors = registry.getInterceptors(advisor);
 						if (mm.isRuntime()) {
 							// Creating a new object instance in the getInterceptors() method

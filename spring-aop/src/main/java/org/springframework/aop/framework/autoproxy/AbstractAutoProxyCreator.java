@@ -242,12 +242,17 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 
 	@Override
 	public Object postProcessBeforeInstantiation(Class<?> beanClass, String beanName) {
+
+		//从缓存中找
 		Object cacheKey = getCacheKey(beanClass, beanName);
 
 		if (!StringUtils.hasLength(beanName) || !this.targetSourcedBeans.contains(beanName)) {
+
+			//判断当前bean是否在advisedBeans中（保存了所有需要增强bean）
 			if (this.advisedBeans.containsKey(cacheKey)) {
 				return null;
 			}
+			//判断当前bean是否是基础类型的Advice、Pointcut、Advisor、AopInfrastructureBean,或者是否是切面（@Aspect）,判断是否需要跳过等。
 			if (isInfrastructureClass(beanClass) || shouldSkip(beanClass, beanName)) {
 				this.advisedBeans.put(cacheKey, Boolean.FALSE);
 				return null;
@@ -319,8 +324,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		if (StringUtils.hasLength(beanName)) {
 			return (FactoryBean.class.isAssignableFrom(beanClass) ?
 					BeanFactory.FACTORY_BEAN_PREFIX + beanName : beanName);
-		}
-		else {
+		} else {
 			return beanClass;
 		}
 	}
@@ -463,7 +467,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 			}
 		}
 
-		//构建通知器，把通用的拦截器也加进来，有些可能会要进行包装
+		//构建之前首先会根据切入点表达式对增强器进行一一匹配，最终拿到所有的增强器。
 		Advisor[] advisors = buildAdvisors(beanName, specificInterceptors);
 		proxyFactory.addAdvisors(advisors);
 		proxyFactory.setTargetSource(targetSource);
