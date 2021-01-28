@@ -557,7 +557,7 @@ class ConfigurationClassParser {
 				// importCandidates是@Import的封装
 				// 循环importCandidates对import的内容进行分类
 				for (SourceClass candidate : importCandidates) {
-					// import导入实现ImportSelector接口的类
+					// import是否实现ImportSelector接口的类
 					if (candidate.isAssignable(ImportSelector.class)) {
 						// Candidate class is an ImportSelector -> delegate to it to determine imports
 						Class<?> candidateClass = candidate.loadClass();
@@ -576,8 +576,8 @@ class ConfigurationClassParser {
 							// 递归调用
 							processImports(configClass, currentSourceClass, importSourceClasses, false);
 						}
-						// 是否为ImportBeanDefinitionRegistrar
-					} else if (candidate.isAssignable(ImportBeanDefinitionRegistrar.class)) {
+
+					} else if (candidate.isAssignable(ImportBeanDefinitionRegistrar.class)) {// 是实现ImportBeanDefinitionRegistrar
 						// Candidate class is an ImportBeanDefinitionRegistrar ->
 						// delegate to it to register additional bean definitions
 						Class<?> candidateClass = candidate.loadClass();
