@@ -239,8 +239,7 @@ class ConfigurationClassParser {
 		do {
 			// 真正的做解析
 			sourceClass = doProcessConfigurationClass(configClass, sourceClass);
-		}
-		while (sourceClass != null);
+		} while (sourceClass != null);
 
 		this.configurationClasses.put(configClass, configClass);
 	}

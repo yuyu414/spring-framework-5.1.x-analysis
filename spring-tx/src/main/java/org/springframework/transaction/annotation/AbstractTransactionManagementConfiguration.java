@@ -50,6 +50,8 @@ public abstract class AbstractTransactionManagementConfiguration implements Impo
 	/**
 	 * Default transaction manager, as configured through a {@link TransactionManagementConfigurer}.
 	 */
+	// 此处：注解的默认的事务处理器（可议通过实现接口TransactionManagementConfigurer来自定义配置）
+	// 因为事务管理器这个东西，一般来说全局一个就行，但是Spring也提供了定制化的能力~~~
 	@Nullable
 	protected PlatformTransactionManager txManager;
 
@@ -58,12 +60,14 @@ public abstract class AbstractTransactionManagementConfiguration implements Impo
 	public void setImportMetadata(AnnotationMetadata importMetadata) {
 		this.enableTx = AnnotationAttributes.fromMap(
 				importMetadata.getAnnotationAttributes(EnableTransactionManagement.class.getName(), false));
+		//这个注解@EnableTransactionManagement是必须的~~~~~~~~~~~~~~~~否则报错了
 		if (this.enableTx == null) {
 			throw new IllegalArgumentException(
 					"@EnableTransactionManagement is not present on importing class " + importMetadata.getClassName());
 		}
 	}
 
+	// 这里和@Async的处理一样，配置文件可以实现这个接口。然后给注解驱动的给一个默认的事务管理器~~~~
 	@Autowired(required = false)
 	void setConfigurers(Collection<TransactionManagementConfigurer> configurers) {
 		if (CollectionUtils.isEmpty(configurers)) {

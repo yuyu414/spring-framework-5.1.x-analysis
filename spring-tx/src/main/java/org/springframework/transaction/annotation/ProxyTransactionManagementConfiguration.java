@@ -45,6 +45,7 @@ public class ProxyTransactionManagementConfiguration extends AbstractTransaction
 		advisor.setTransactionAttributeSource(transactionAttributeSource());
 		advisor.setAdvice(transactionInterceptor());
 		if (this.enableTx != null) {
+			// 顺序由@EnableTransactionManagement注解的Order属性来指定 默认值为：Ordered.LOWEST_PRECEDENCE
 			advisor.setOrder(this.enableTx.<Integer>getNumber("order"));
 		}
 		return advisor;
@@ -58,7 +59,10 @@ public class ProxyTransactionManagementConfiguration extends AbstractTransaction
 
 	@Bean
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
+	// 事务拦截器，它是个`MethodInterceptor`，它也是Spring处理事务最为核心的部分
+	// 请注意：你可以自己定义一个TransactionInterceptor（同名的），来覆盖此Bean
 	public TransactionInterceptor transactionInterceptor() {
+		//实现了MethodInterceptor注意看invoke方法
 		TransactionInterceptor interceptor = new TransactionInterceptor();
 		interceptor.setTransactionAttributeSource(transactionAttributeSource());
 		if (this.txManager != null) {

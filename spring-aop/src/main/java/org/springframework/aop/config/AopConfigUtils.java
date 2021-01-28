@@ -120,6 +120,9 @@ public abstract class AopConfigUtils {
 
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
 
+		// 可以发现这里有一个很巧妙的处理：会对自动代理创建器进行升级~~~~
+		// 所以如果你第一次进来的是`InfrastructureAdvisorAutoProxyCreator`，第二次进来的是`AnnotationAwareAspectJAutoProxyCreator`，那就会取第二次进来的这个Class
+		// 反之则不行。这里面是维护的一个优先级顺序的，具体参看本类的static代码块，就是顺序  最后一个`AnnotationAwareAspectJAutoProxyCreator`才是最为强大的
 		if (registry.containsBeanDefinition(AUTO_PROXY_CREATOR_BEAN_NAME)) {
 			BeanDefinition apcDefinition = registry.getBeanDefinition(AUTO_PROXY_CREATOR_BEAN_NAME);
 			if (!cls.getName().equals(apcDefinition.getBeanClassName())) {
