@@ -87,6 +87,8 @@ public abstract class DataSourceUtils {
 	}
 
 	/**
+	 * 获取获取当前线程的connection
+	 *
 	 * Actually obtain a JDBC Connection from the given DataSource.
 	 * Same as {@link #getConnection}, but throwing the original SQLException.
 	 * <p>Is aware of a corresponding Connection bound to the current thread, for example
@@ -101,6 +103,7 @@ public abstract class DataSourceUtils {
 	public static Connection doGetConnection(DataSource dataSource) throws SQLException {
 		Assert.notNull(dataSource, "No DataSource specified");
 
+		//这里也是
 		ConnectionHolder conHolder = (ConnectionHolder) TransactionSynchronizationManager.getResource(dataSource);
 		if (conHolder != null && (conHolder.hasConnection() || conHolder.isSynchronizedWithTransaction())) {
 			conHolder.requested();
@@ -133,8 +136,7 @@ public abstract class DataSourceUtils {
 				if (holderToUse != conHolder) {
 					TransactionSynchronizationManager.bindResource(dataSource, holderToUse);
 				}
-			}
-			catch (RuntimeException ex) {
+			} catch (RuntimeException ex) {
 				// Unexpected exception from external delegation call -> close Connection and rethrow.
 				releaseConnection(con, dataSource);
 				throw ex;

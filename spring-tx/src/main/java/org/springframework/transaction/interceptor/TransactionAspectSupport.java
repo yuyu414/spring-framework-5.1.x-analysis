@@ -282,8 +282,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 		TransactionAttributeSource tas = getTransactionAttributeSource();
 		final TransactionAttribute txAttr = (tas != null ? tas.getTransactionAttribute(method, targetClass) : null);
 
-		// 2.查找容器中的PlatformTransactionManager，用于管理事务 在2）中详细分析
-		// 本例中使用的是DataSourceTransactionManager
+		// 2.查找容器中的PlatformTransactionManager，用于管理事务（常用的如：DataSourceTransactionManager）
 		final PlatformTransactionManager tm = determineTransactionManager(txAttr);
 
 		// 3.获取被代理的类方法名称
@@ -369,7 +368,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 	}
 
 	/**
-	 * Determine the specific transaction manager to use for the given transaction.
+	 * 获取特定的事务管理器。
 	 */
 	@Nullable
 	protected PlatformTransactionManager determineTransactionManager(@Nullable TransactionAttribute txAttr) {
