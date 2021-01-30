@@ -127,8 +127,7 @@ class TypeConverterDelegate {
 			if (conversionService.canConvert(sourceTypeDesc, typeDescriptor)) {
 				try {
 					return (T) conversionService.convert(newValue, sourceTypeDesc, typeDescriptor);
-				}
-				catch (ConversionFailedException ex) {
+				} catch (ConversionFailedException ex) {
 					// fallback to default conversion logic below
 					conversionAttemptEx = ex;
 				}
@@ -149,9 +148,12 @@ class TypeConverterDelegate {
 					}
 				}
 			}
+			//如果属性编辑器为null
 			if (editor == null) {
+				//获取Spring系统设置的默认PropertyEditor
 				editor = findDefaultEditor(requiredType);
 			}
+			//进行属性转换操作
 			convertedValue = doConvertValue(oldValue, convertedValue, requiredType, editor);
 		}
 
@@ -330,7 +332,7 @@ class TypeConverterDelegate {
 	private PropertyEditor findDefaultEditor(@Nullable Class<?> requiredType) {
 		PropertyEditor editor = null;
 		if (requiredType != null) {
-			// No custom editor -> check BeanWrapperImpl's default editors.
+			// 获取默认的属性编辑器，如果为空则注册默认的(点进去createDefaultEditors方法)
 			editor = this.propertyEditorRegistry.getDefaultEditor(requiredType);
 			if (editor == null && String.class != requiredType) {
 				// No BeanWrapper default editor -> check standard JavaBean editor.
@@ -399,6 +401,7 @@ class TypeConverterDelegate {
 					logger.trace("Converting String to [" + requiredType + "] using property editor [" + editor + "]");
 				}
 				String newTextValue = (String) convertedValue;
+				//因为value值是String类型，所以调用此方法将String转化为其他类型值
 				return doConvertTextValue(oldValue, newTextValue, editor);
 			}
 			else if (String.class == requiredType) {
@@ -418,6 +421,7 @@ class TypeConverterDelegate {
 	 */
 	private Object doConvertTextValue(@Nullable Object oldValue, String newTextValue, PropertyEditor editor) {
 		try {
+			//设置旧值
 			editor.setValue(oldValue);
 		}
 		catch (Exception ex) {
@@ -426,7 +430,9 @@ class TypeConverterDelegate {
 			}
 			// Swallow and proceed.
 		}
+		//转换
 		editor.setAsText(newTextValue);
+		//设置新值
 		return editor.getValue();
 	}
 

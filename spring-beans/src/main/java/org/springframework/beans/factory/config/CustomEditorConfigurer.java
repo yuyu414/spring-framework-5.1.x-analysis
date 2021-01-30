@@ -85,6 +85,9 @@ import org.springframework.util.ClassUtils;
  * Use a common base class or delegate to common PropertyEditorRegistrar
  * implementations to reuse editor registration there.
  *
+ * 此类可以注册自定义属性编辑器，因为他实现了postProcessBeanFactory。
+ * 在Spring容器中加载配置文件并生成BeanDefinition后会被执行
+ *
  * @author Juergen Hoeller
  * @since 27.02.2004
  * @see java.beans.PropertyEditor
@@ -139,14 +142,21 @@ public class CustomEditorConfigurer implements BeanFactoryPostProcessor, Ordered
 		this.customEditors = customEditors;
 	}
 
-
+	/**
+	 *
+	 * @param beanFactory the bean factory used by the application context
+	 * @throws BeansException
+	 */
 	@Override
 	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+
+		//添加自定义属性编辑注册器的注册器
 		if (this.propertyEditorRegistrars != null) {
 			for (PropertyEditorRegistrar propertyEditorRegistrar : this.propertyEditorRegistrars) {
 				beanFactory.addPropertyEditorRegistrar(propertyEditorRegistrar);
 			}
 		}
+		//添加自定义属性编辑器
 		if (this.customEditors != null) {
 			this.customEditors.forEach(beanFactory::registerCustomEditor);
 		}

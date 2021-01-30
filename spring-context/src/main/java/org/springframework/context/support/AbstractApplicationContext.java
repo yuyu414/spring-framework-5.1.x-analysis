@@ -647,6 +647,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 		//设置支持表达式解析器
 		beanFactory.setBeanExpressionResolver(new StandardBeanExpressionResolver(beanFactory.getBeanClassLoader()));
+
+		//设置一些必要的自定义属性编辑注册器 查看ResourceEditorRegistrar#registerCustomEditors方法
 		beanFactory.addPropertyEditorRegistrar(new ResourceEditorRegistrar(this, getEnvironment()));
 
 		// Configure the bean factory with context callbacks.

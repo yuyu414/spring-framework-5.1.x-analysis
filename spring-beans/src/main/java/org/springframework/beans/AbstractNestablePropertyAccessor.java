@@ -180,6 +180,7 @@ public abstract class AbstractNestablePropertyAccessor extends AbstractPropertyA
 	 * @param object the new target object
 	 */
 	public void setWrappedInstance(Object object) {
+		//创建了TypeConverterDelegate
 		setWrappedInstance(object, "", null);
 	}
 
@@ -196,6 +197,7 @@ public abstract class AbstractNestablePropertyAccessor extends AbstractPropertyA
 		this.nestedPath = (nestedPath != null ? nestedPath : "");
 		this.rootObject = (!this.nestedPath.isEmpty() ? rootObject : this.wrappedObject);
 		this.nestedPropertyAccessors = null;
+		//TypeConverterDelegate中持有了PropertyEditorRegistrySupport的引用
 		this.typeConverterDelegate = new TypeConverterDelegate(this, this.wrappedObject);
 	}
 
@@ -603,7 +605,7 @@ public abstract class AbstractNestablePropertyAccessor extends AbstractPropertyA
 	protected Object convertForProperty(
 			String propertyName, @Nullable Object oldValue, @Nullable Object newValue, TypeDescriptor td)
 			throws TypeMismatchException {
-
+		//点进去
 		return convertIfNecessary(propertyName, oldValue, newValue, td.getType(), td);
 	}
 

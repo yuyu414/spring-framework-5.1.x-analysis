@@ -1,6 +1,6 @@
 package org.springframework.learn;
 
-import org.springframework.aop.aspectj.annotation.AnnotationAwareAspectJAutoProxyCreator;
+import org.springframework.beans.factory.config.CustomEditorConfigurer;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -17,7 +17,9 @@ public class SpringApplicationTest {
 				System.out.println("自定义事件监听器~~~~~。要放在refresh()，之前哦");
 			}
 		});
-        applicationContext.register(UserServiceImpl.class);//注册
+        applicationContext.register(UserServiceImpl.class, //
+				//自定义属性编辑器配置类,它实现了BeanFactoryPostProcessor接口
+				CustomEditorConfigurer.class);//注册
         applicationContext.refresh();
         UserService userService = applicationContext.getBean(UserService.class);
         userService.sayHello();

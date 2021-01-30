@@ -134,10 +134,10 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	@Nullable
 	private ConversionService conversionService;
 
-	/** Custom PropertyEditorRegistrars to apply to the beans of this factory. */
+	/** 自定义属性编辑注册器的注册器集合*/
 	private final Set<PropertyEditorRegistrar> propertyEditorRegistrars = new LinkedHashSet<>(4);
 
-	/** Custom PropertyEditors to apply to the beans of this factory. */
+	/** 自定义属性编辑器 */
 	private final Map<Class<?>, Class<? extends PropertyEditor>> customEditors = new HashMap<>(4);
 
 	/** A custom TypeConverter to use, overriding the default PropertyEditor mechanism. */
@@ -1153,6 +1153,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	 */
 	protected void initBeanWrapper(BeanWrapper bw) {
 		bw.setConversionService(getConversionService());
+		//注册自定义属性编辑器
 		registerCustomEditors(bw);
 	}
 
@@ -1170,9 +1171,11 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		if (registrySupport != null) {
 			registrySupport.useConfigValueEditors();
 		}
+		//如果AbstractBeanFactory中中自定义属性编辑注册器的注册器集合不为空
 		if (!this.propertyEditorRegistrars.isEmpty()) {
 			for (PropertyEditorRegistrar registrar : this.propertyEditorRegistrars) {
 				try {
+					//把自定义属性编辑注册器中的属性编辑器注册到这个registry中，此处registry其实是BeanWrapper(BeanWrapper继承了PropertyEditorRegistrySupport)
 					registrar.registerCustomEditors(registry);
 				}catch (BeanCreationException ex) {
 					Throwable rootCause = ex.getMostSpecificCause();
@@ -1193,8 +1196,11 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				}
 			}
 		}
+		//自定义属性编辑器不为空
 		if (!this.customEditors.isEmpty()) {
 			this.customEditors.forEach((requiredType, editorClass) ->
+					//此处registry其实是BeanWrapper(BeanWrapper继承了PropertyEditorRegistrySupport)
+					//实质是把AbstractBeanFactory中配置的自定义属性编辑器注册到PropertyEditorRegistrySupport的customEditors中
 					registry.registerCustomEditor(requiredType, BeanUtils.instantiateClass(editorClass)));
 		}
 	}

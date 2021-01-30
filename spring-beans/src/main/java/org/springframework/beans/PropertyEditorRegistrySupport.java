@@ -188,6 +188,7 @@ public class PropertyEditorRegistrySupport implements PropertyEditorRegistry {
 				return editor;
 			}
 		}
+		//当为空时候，注册默认的属性编辑器
 		if (this.defaultEditors == null) {
 			createDefaultEditors();
 		}
@@ -195,7 +196,7 @@ public class PropertyEditorRegistrySupport implements PropertyEditorRegistry {
 	}
 
 	/**
-	 * Actually register the default editors for this registry instance.
+	 *  Spring框架内置了一些PropertyEditor，并且bean填充属性之前都会把这些PropertyEditor添加到BeanWrapper中
 	 */
 	private void createDefaultEditors() {
 		this.defaultEditors = new HashMap<>(64);
@@ -333,7 +334,7 @@ public class PropertyEditorRegistrySupport implements PropertyEditorRegistry {
 				requiredTypeToUse = getPropertyType(propertyPath);
 			}
 		}
-		// No property-specific editor -> check type-specific editor.
+		// 查找自定义属性编辑器
 		return getCustomEditor(requiredTypeToUse);
 	}
 

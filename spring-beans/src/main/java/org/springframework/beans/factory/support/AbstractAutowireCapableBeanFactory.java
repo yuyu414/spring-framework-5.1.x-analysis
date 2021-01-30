@@ -45,6 +45,7 @@ import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyAccessorUtils;
+import org.springframework.beans.PropertyEditorRegistrySupport;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.PropertyValues;
 import org.springframework.beans.TypeConverter;
@@ -584,7 +585,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		Object exposedObject = bean;
 		try {
-			//对bean属性进行填充，注入bean中的属性，会递归初始化依赖的bean
+			//对bean属性进行填充，注入bean中的属性(会涉及到属性编辑器的处理)，会递归初始化依赖的bean
 			populateBean(beanName, mbd, instanceWrapper);
 			//调用初始化方法，比如init-method、注入Aware对象、后置处理器，AOP也是在此處理的
 			exposedObject = initializeBean(beanName, exposedObject, mbd);
@@ -1303,7 +1304,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}else {
 				beanInstance = getInstantiationStrategy().instantiate(mbd, beanName, this);
 			}
+			//实例化Bean并使用BeanWrapper包装Bean实例(构造方法做了一些事儿)
 			BeanWrapper bw = new BeanWrapperImpl(beanInstance);
+			//BeanWrapperImpl间接继承了PropertyEditorRegistrySupport,里面有很多默认的属性编辑器，感兴趣的话可以看看
 			initBeanWrapper(bw);
 			return bw;
 		}catch (Throwable ex) {
@@ -1438,7 +1441,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		if (pvs != null) {
-			// 将pvs上所有的属性填充到BeanWrapper对应的Bean实例中
+			// 将pvs上所有的属性填充到BeanWrapper对应的Bean实例中，属性编辑器的处理
 			applyPropertyValues(beanName, mbd, bw, pvs);
 		}
 	}
@@ -1699,13 +1702,14 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				Object originalValue = pv.getValue();
 				// 核心逻辑，解析获取实际的值
 				// 对于RuntimeReference，会解析拿到具体的beanName,最终通过getBean(beanName)拿到具体的对象
+				//将在PropertyValue对象的属性值取出，默认是String类型。
 				Object resolvedValue = valueResolver.resolveValueIfNecessary(pv, originalValue);
 				Object convertedValue = resolvedValue;
 				// 判断是否可以转换
 				boolean convertible = bw.isWritableProperty(propertyName) &&
 						!PropertyAccessorUtils.isNestedOrIndexedProperty(propertyName);
 				if (convertible) {
-					// 尝试进行转换
+					// 尝试进行转换，属性编辑器处理代码
 					convertedValue = convertForProperty(resolvedValue, propertyName, bw, converter);
 				}
 				// Possibly store converted value in merged bean definition,
@@ -1749,11 +1753,12 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			@Nullable Object value, String propertyName, BeanWrapper bw, TypeConverter converter) {
 
 		if (converter instanceof BeanWrapperImpl) {
+			//进入convertForProperty
 			return ((BeanWrapperImpl) converter).convertForProperty(value, propertyName);
-		}
-		else {
+		} else {
 			PropertyDescriptor pd = bw.getPropertyDescriptor(propertyName);
 			MethodParameter methodParam = BeanUtils.getWriteMethodParameter(pd);
+			//进入convertIfNecessary
 			return converter.convertIfNecessary(value, pd.getPropertyType(), methodParam);
 		}
 	}
