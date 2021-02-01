@@ -4,6 +4,7 @@ import org.springframework.beans.factory.config.CustomEditorConfigurer;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.learn.custom.CustomBean;
 
 public class SpringApplicationTest {
 
@@ -18,6 +19,7 @@ public class SpringApplicationTest {
 			}
 		});
         applicationContext.register(UserServiceImpl.class, //
+				CustomBean.class,
 				//自定义属性编辑器配置类,它实现了BeanFactoryPostProcessor接口
 				CustomEditorConfigurer.class);//注册
         applicationContext.refresh();
