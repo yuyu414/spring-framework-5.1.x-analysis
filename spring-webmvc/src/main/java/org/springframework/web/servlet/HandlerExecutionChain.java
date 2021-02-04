@@ -41,11 +41,14 @@ public class HandlerExecutionChain {
 
 	private static final Log logger = LogFactory.getLog(HandlerExecutionChain.class);
 
+	// 对应的处理器
 	private final Object handler;
 
+	//对应的拦截器
 	@Nullable
 	private HandlerInterceptor[] interceptors;
 
+	//集合化的拦截器
 	@Nullable
 	private List<HandlerInterceptor> interceptorList;
 
@@ -140,10 +143,15 @@ public class HandlerExecutionChain {
 		if (!ObjectUtils.isEmpty(interceptors)) {
 			for (int i = 0; i < interceptors.length; i++) {
 				HandlerInterceptor interceptor = interceptors[i];
+				/**
+				 interceptor.preHandle()：执行所有拦截器的前置方法，
+				 如果有一个拦截器的preHandle()返回false,使得程序直接return，将导致后面的拦截器的preHandle无法执行
+				 **/
 				if (!interceptor.preHandle(request, response, this.handler)) {
 					triggerAfterCompletion(request, response, null);
 					return false;
 				}
+				//这个值在初始值是-1，表示 已经成功执行并返回true的preHandle的下标，在这个下标之后的 拦截器的afterCompletion()都不会执行
 				this.interceptorIndex = i;
 			}
 		}
@@ -174,13 +182,30 @@ public class HandlerExecutionChain {
 			throws Exception {
 
 		HandlerInterceptor[] interceptors = getInterceptors();
+
+		//注意拦截器的afterCompletion是从后往前执行的
+		/**
+		 this.interceptorIndex很重要，在applyPreHandle中有讲过，它决定了下标在
+		 interceptorIndex之前的拦截器的afterCompletion()将会执行，在这之后的不会执行
+		 如：拦截器注册顺序：l0,l1,l2
+
+		 正常执行顺序：l0.preHandle，l1.preHandle，l2.preHandle，
+		 l2.postHandle，l1.postHandle，l0.postHandle，
+		 l2.afterCompletion，l1.afterCompletion，l0.afterCompletion
+
+		 如果执行完l0.preHandle，l1.preHandle后，l2.preHandle抛异常了，那么执行顺序是：
+		 l0.preHandle正常执行，l1.preHandle正常执行，l2.preHandle抛异常，
+		 所有拦截器postHandle不执行，
+		 l2.afterCompletion不执行，l1.afterCompletion正常执行，l0.afterCompletion正常执行。
+
+		 此外，postHandle抛异常并不会导致afterCompletion不执行
+		 **/
 		if (!ObjectUtils.isEmpty(interceptors)) {
 			for (int i = this.interceptorIndex; i >= 0; i--) {
 				HandlerInterceptor interceptor = interceptors[i];
 				try {
 					interceptor.afterCompletion(request, response, this.handler, ex);
-				}
-				catch (Throwable ex2) {
+				} catch (Throwable ex2) {
 					logger.error("HandlerInterceptor.afterCompletion threw exception", ex2);
 				}
 			}
@@ -199,8 +224,7 @@ public class HandlerExecutionChain {
 					try {
 						AsyncHandlerInterceptor asyncInterceptor = (AsyncHandlerInterceptor) interceptor;
 						asyncInterceptor.afterConcurrentHandlingStarted(request, response, this.handler);
-					}
-					catch (Throwable ex) {
+					} catch (Throwable ex) {
 						if (logger.isErrorEnabled()) {
 							logger.error("Interceptor [" + interceptor + "] failed in afterConcurrentHandlingStarted", ex);
 						}

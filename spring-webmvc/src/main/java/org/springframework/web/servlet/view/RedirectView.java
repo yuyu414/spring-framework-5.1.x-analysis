@@ -619,17 +619,14 @@ public class RedirectView extends AbstractUrlBasedView implements SmartView {
 			if (this.statusCode != null) {
 				response.setStatus(this.statusCode.value());
 				response.setHeader("Location", encodedURL);
-			}
-			else if (attributeStatusCode != null) {
+			} else if (attributeStatusCode != null) {
 				response.setStatus(attributeStatusCode.value());
 				response.setHeader("Location", encodedURL);
-			}
-			else {
+			} else {
 				// Send status code 302 by default.
 				response.sendRedirect(encodedURL);
 			}
-		}
-		else {
+		} else {
 			HttpStatus statusCode = getHttp11StatusCode(request, response, targetUrl);
 			response.setStatus(statusCode.value());
 			response.setHeader("Location", encodedURL);
