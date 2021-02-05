@@ -63,13 +63,12 @@ import org.springframework.util.StringUtils;
 public class GenericConversionService implements ConfigurableConversionService {
 
 	/**
-	 * General NO-OP converter used when conversion is not required.
+	 * 这个转换器在没有找到对应转化器 并且 源类型与目标类型是同一种类型时使用
 	 */
 	private static final GenericConverter NO_OP_CONVERTER = new NoOpConverter("NO_OP");
 
 	/**
-	 * Used as a cache entry when no converter is available.
-	 * This converter is never returned.
+	 * 这个转换器在没有找到对应转化器 并且 源类型与目标类型不是同一种类型时使用。将抛出异常
 	 */
 	private static final GenericConverter NO_MATCH = new NoOpConverter("NO_MATCH");
 
@@ -79,7 +78,7 @@ public class GenericConversionService implements ConfigurableConversionService {
 	private final Map<ConverterCacheKey, GenericConverter> converterCache = new ConcurrentReferenceHashMap<>(64);
 
 
-	// ConverterRegistry implementation
+	// 注册类型转换器 Converter接口 这个接口就是像我们上面例子里提到的StringToDateConvert
 
 	@Override
 	public void addConverter(Converter<?, ?> converter) {

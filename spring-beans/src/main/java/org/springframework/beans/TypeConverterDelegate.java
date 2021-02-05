@@ -120,10 +120,12 @@ class TypeConverterDelegate {
 
 		ConversionFailedException conversionAttemptEx = null;
 
-		// 没有自定义的属性编辑器但是有指定的conversionService
+		// 没有自定义的属性编辑器但是有指定的conversionService（类型转换器：参考ConversionServiceFactoryBean）
 		ConversionService conversionService = this.propertyEditorRegistry.getConversionService();
+		// 没有自定义的属性编辑器但是有指定的类型转换器
 		if (editor == null && conversionService != null && newValue != null && typeDescriptor != null) {
 			TypeDescriptor sourceTypeDesc = TypeDescriptor.forObject(newValue);
+			//能否转换
 			if (conversionService.canConvert(sourceTypeDesc, typeDescriptor)) {
 				try {
 					return (T) conversionService.convert(newValue, sourceTypeDesc, typeDescriptor);

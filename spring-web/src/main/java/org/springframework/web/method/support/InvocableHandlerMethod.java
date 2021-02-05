@@ -169,7 +169,7 @@ public class InvocableHandlerMethod extends HandlerMethod {
 				throw new IllegalStateException(formatArgumentError(parameter, "No suitable resolver"));
 			}
 			try {
-				//resolveArgument点进去（参数解析，属性转换）
+				//resolveArgument点进去（参数解析，类型转换）
 				args[i] = this.resolvers.resolveArgument(parameter, mavContainer, request, this.dataBinderFactory);
 			} catch (Exception ex) {
 				// Leave stack trace for later, exception may actually be resolved and handled...
