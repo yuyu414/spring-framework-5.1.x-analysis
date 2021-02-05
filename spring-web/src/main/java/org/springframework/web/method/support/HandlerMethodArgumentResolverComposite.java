@@ -31,6 +31,7 @@ import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 
 /**
+ * 实现了HandlerMethodArgumentResolver接口。这里运用涉及模式中的composite模式（组合模式）
  * Resolves method parameters by delegating to a list of registered
  * {@link HandlerMethodArgumentResolver HandlerMethodArgumentResolvers}.
  * Previously resolved method parameters are cached for faster lookups.
@@ -44,8 +45,11 @@ public class HandlerMethodArgumentResolverComposite implements HandlerMethodArgu
 	@Deprecated
 	protected final Log logger = LogFactory.getLog(getClass());
 
+	//它的元素在RequestMappingHandlerAdapter类的afterPropertiesSet方法中被添加，
+	// 存放的是SpringMVC一些默认的HandlerMethodArgumentResolver参数解析器
 	private final List<HandlerMethodArgumentResolver> argumentResolvers = new LinkedList<>();
 
+	//存放已经解析过的参数，已经对应的HandlerMethodArgumentResolver解析器。加快查找过程
 	private final Map<MethodParameter, HandlerMethodArgumentResolver> argumentResolverCache =
 			new ConcurrentHashMap<>(256);
 
@@ -119,11 +123,14 @@ public class HandlerMethodArgumentResolverComposite implements HandlerMethodArgu
 	public Object resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) throws Exception {
 
+		// 首先获取参数解析器，这里获取的逻辑是首先从argumentResolverCache缓存中获取该MethodParameter匹配的HandlerMethodArgumentResolver。
+		// 如果为空，遍历初始化定义的那24个。查找匹配的HandlerMethodArgumentResolver，然后添加至argumentResolverCache缓存中
 		HandlerMethodArgumentResolver resolver = getArgumentResolver(parameter);
 		if (resolver == null) {
 			throw new IllegalArgumentException("Unsupported parameter type [" +
 					parameter.getParameterType().getName() + "]. supportsParameter should be called first.");
 		}
+		//具体实现：参数解析+类型转换
 		return resolver.resolveArgument(parameter, mavContainer, webRequest, binderFactory);
 	}
 

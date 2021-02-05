@@ -512,8 +512,9 @@ public class DispatcherServlet extends FrameworkServlet {
 		initLocaleResolver(context);
 		initThemeResolver(context);
 
-		//一下类似
+		//以下类似
 		initHandlerMappings(context);
+		//RequestMappingHandlerAdapter#afterPropertiesSet里面初始化了参数解析器
 		initHandlerAdapters(context);
 		initHandlerExceptionResolvers(context);
 		initRequestToViewNameTranslator(context);
@@ -685,8 +686,7 @@ public class DispatcherServlet extends FrameworkServlet {
 				// We keep HandlerExceptionResolvers in sorted order.
 				AnnotationAwareOrderComparator.sort(this.handlerExceptionResolvers);
 			}
-		}
-		else {
+		} else {
 			try {
 				HandlerExceptionResolver her =
 						context.getBean(HANDLER_EXCEPTION_RESOLVER_BEAN_NAME, HandlerExceptionResolver.class);
@@ -1044,8 +1044,9 @@ public class DispatcherServlet extends FrameworkServlet {
 					return;
 				}
 
-				// //方法调用了ServletInvocableHandlerMethod.invokeAndHandle()，详情查看1.2
+				// //方法调用了ServletInvocableHandlerMethod.invokeAndHandle()
 				//响应增强也在这个方法里执行了
+				//这里ha如果是RequestMappingHandlerAdapter，在执行handlerMethod之前，需要处理参数的绑定。
 				mv = ha.handle(processedRequest, response, mappedHandler.getHandler());
 
 				if (asyncManager.isConcurrentHandlingStarted()) {

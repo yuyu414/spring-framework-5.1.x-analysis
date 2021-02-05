@@ -113,6 +113,12 @@ public class ModelAttributeMethodProcessor implements HandlerMethodArgumentResol
 	 * and the next method parameter is not of type {@link Errors}
 	 * @throws Exception if WebDataBinder initialization fails
 	 */
+	/**
+	 * 解析model中的参数，如果从ModelAndViewContainer未找到，直接通过反射实例化一个对象。
+	 * 具体实例化是通过父类的createAttribute方法，通过调用BeanUtils.instantiateClass方法来实例化的。
+	 * 这个对象便是后续传给方法的对象，但是此时创建的对象里面的值都还为空，
+	 * 注入值是通过bindRequestParameters方法来实现的。
+	 */
 	@Override
 	@Nullable
 	public final Object resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
@@ -132,13 +138,12 @@ public class ModelAttributeMethodProcessor implements HandlerMethodArgumentResol
 
 		if (mavContainer.containsAttribute(name)) {
 			attribute = mavContainer.getModel().get(name);
-		}
-		else {
+		} else {
 			// Create attribute instance
 			try {
+				//具体实例化是通过父类的createAttribute方法
 				attribute = createAttribute(name, parameter, binderFactory, webRequest);
-			}
-			catch (BindException ex) {
+			} catch (BindException ex) {
 				if (isBindExceptionRequired(parameter)) {
 					// No BindingResult parameter -> fail with BindException
 					throw ex;
@@ -157,8 +162,10 @@ public class ModelAttributeMethodProcessor implements HandlerMethodArgumentResol
 			WebDataBinder binder = binderFactory.createBinder(webRequest, attribute, name);
 			if (binder.getTarget() != null) {
 				if (!mavContainer.isBindingDisabled(name)) {
+					//将请求绑定至目标binder的target对象，也就是刚刚创建的attribute对象。
 					bindRequestParameters(binder, webRequest);
 				}
+				//如果有验证，则验证参数
 				validateIfApplicable(binder, parameter);
 				if (binder.getBindingResult().hasErrors() && isBindExceptionRequired(binder, parameter)) {
 					throw new BindException(binder.getBindingResult());
@@ -210,12 +217,10 @@ public class ModelAttributeMethodProcessor implements HandlerMethodArgumentResol
 			Constructor<?>[] ctors = clazz.getConstructors();
 			if (ctors.length == 1) {
 				ctor = ctors[0];
-			}
-			else {
+			} else {
 				try {
 					ctor = clazz.getDeclaredConstructor();
-				}
-				catch (NoSuchMethodException ex) {
+				} catch (NoSuchMethodException ex) {
 					throw new IllegalStateException("No primary or default constructor found for " + clazz, ex);
 				}
 			}
@@ -265,6 +270,7 @@ public class ModelAttributeMethodProcessor implements HandlerMethodArgumentResol
 				() -> "Invalid number of parameter names: " + paramNames.length + " for constructor " + ctor);
 
 		Object[] args = new Object[paramTypes.length];
+		//创建
 		WebDataBinder binder = binderFactory.createBinder(webRequest, null, attributeName);
 		String fieldDefaultPrefix = binder.getFieldDefaultPrefix();
 		String fieldMarkerPrefix = binder.getFieldMarkerPrefix();
@@ -289,12 +295,11 @@ public class ModelAttributeMethodProcessor implements HandlerMethodArgumentResol
 				MethodParameter methodParam = new FieldAwareConstructorParameter(ctor, i, paramName);
 				if (value == null && methodParam.isOptional()) {
 					args[i] = (methodParam.getParameterType() == Optional.class ? Optional.empty() : null);
-				}
-				else {
+				} else {
+					//属性编辑器的类型转换
 					args[i] = binder.convertIfNecessary(value, paramType, methodParam);
 				}
-			}
-			catch (TypeMismatchException ex) {
+			} catch (TypeMismatchException ex) {
 				ex.initPropertyName(paramName);
 				args[i] = value;
 				failedParams.add(paramName);

@@ -286,6 +286,7 @@ public class ExceptionHandlerExceptionResolver extends AbstractHandlerMethodExce
 			}
 			ExceptionHandlerMethodResolver resolver = new ExceptionHandlerMethodResolver(beanType);
 			if (resolver.hasExceptionMappings()) {
+				// 找到所有ExceptionHandler标注的方法并保存成一个ExceptionHandlerMethodResolver类型的对象缓存起来
 				this.exceptionHandlerAdviceCache.put(adviceBean, resolver);
 			}
 			if (ResponseBodyAdvice.class.isAssignableFrom(beanType)) {
