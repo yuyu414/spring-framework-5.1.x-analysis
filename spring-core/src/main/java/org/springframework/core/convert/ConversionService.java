@@ -19,6 +19,30 @@ package org.springframework.core.convert;
 import org.springframework.lang.Nullable;
 
 /**
+ * conversionService注入过程
+ * 一、org.springframework.context.support.AbstractApplicationContext
+ *
+ * refresh→finishBeanFactoryInitialization→setConversionService
+ * 二、org.springframework.beans.factory.support.AbstractBeanFactory
+ *
+ * getConversionService→initBeanWrapper→
+ * 三、org.springframework.beans.PropertyEditorRegistrySupport
+ *
+ * 成员：conversionService/defaultEditors/customEditors
+ * setConversionService→
+ * 四、org.springframework.beans.TypeConverterSupport
+ *
+ * typeConverterDelegate→代理→convertIfNecessary
+ * 五、org.springframework.beans.SimpleTypeConverter
+ *
+ * 完成typeConverterDelegate成员初始化
+ * 六、org.springframework.beans.TypeConverterDelegate
+ *
+ * 数据字段：private final PropertyEditorRegistrySupport propertyEditorRegistry;
+ * convertIfNecessary→进行类型转换系统会调用底层的conversionService.convert或调用doConvertValue传递PropertyEditor来实现
+ */
+
+/**
  * A service interface for type conversion. This is the entry point into the convert system.
  * Call {@link #convert(Object, Class)} to perform a thread-safe type conversion using this system.
  *
